@@ -1,0 +1,15 @@
+Task: create an virtual machine in AWS and login into it. After in that virtual machine open edge or chrome browser and browse something. 
+EX: Baby latest movie review.
+
+Step1 : create an instance with a name like VM1
+step2 : instance type t2 micro
+step3 : create an keypair with any words... while creating a key pair you wiill download the pem file (which is your remote or virtual machine)
+step4 : launch instance
+...... after launching instance select the isntance and click connect
+select RDP client
+download remote desktop file
+upload that file to decrypt the password
+copy the password
+
+
+open the pemfile you downloaded and then click connect then its asks password and paste it... here your VM created.. and in that VM there is a edge browser and you can browse whatever you want..

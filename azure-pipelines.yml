@@ -8,7 +8,7 @@ pr:
 
 variables:
   buildConfiguration: 'Release'
-  azureServiceConnection: 'Project-1 Service Connection'   # keep quotes (spaces in name)
+  azureServiceConnection: 'Project-1 Service Connection'   # keep quotes (spaces)
   appNameDev: 'mywebapp-dev'
   appNameStg: 'mywebapp-stg'
   appNamePrd: 'mywebapp-prd'
@@ -52,46 +52,18 @@ stages:
         arguments: '--configuration $(buildConfiguration) --no-build --collect "XPlat Code Coverage"'
         publishTestResults: true
 
-    # ===== Publish the specific web project =====
     - task: DotNetCoreCLI@2
-      displayName: 'Publish web project'
+      displayName: 'Publish web project(s)'
       inputs:
         command: 'publish'
-        projects: 'src/DotNetWebApp/DotNetWebApp.csproj'
-        arguments: >-
-          --configuration $(buildConfiguration)
-          --output $(Build.ArtifactStagingDirectory)/publish
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/web'
         zipAfterPublish: false
 
-    # ===== Flatten publish output safely if a single nested folder exists (e.g., publish/DotNetWebApp/...) =====
-    - bash: |
-        set -eux
-        PUB="$(Build.ArtifactStagingDirectory)/publish"
-
-        # count top-level entries
-        COUNT="$(find "$PUB" -mindepth 1 -maxdepth 1 | wc -l)"
-        if [ "$COUNT" -eq 1 ]; then
-          # get the sole entry if it's a directory
-          SUB="$(find "$PUB" -mindepth 1 -maxdepth 1 -type d || true)"
-          if [ -n "$SUB" ]; then
-            echo "Flattening $SUB into $PUB"
-            shopt -s dotglob
-            # copy contents (including hidden files/dirs) up one level
-            cp -a "$SUB"/. "$PUB"/
-            # remove the now redundant subfolder
-            rm -rf "$SUB"
-          fi
-        fi
-
-        echo "Publish folder listing:"
-        ls -la "$PUB"
-      displayName: 'Flatten publish output (safe)'
-
-    # ===== ZIP exactly the flattened publish folder contents =====
     - task: ArchiveFiles@2
       displayName: 'Create deployment ZIP'
       inputs:
-        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/web'
         includeRootFolder: false
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'

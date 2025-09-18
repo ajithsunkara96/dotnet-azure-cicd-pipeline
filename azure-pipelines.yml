@@ -56,14 +56,14 @@ stages:
       displayName: 'Publish web project(s)'
       inputs:
         command: 'publish'
-        publishWebProjects: true
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/web'
+        projects: 'src/DotNetWebApp/DotNetWebApp.csproj'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
         zipAfterPublish: false
 
     - task: ArchiveFiles@2
       displayName: 'Create deployment ZIP'
       inputs:
-        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/web'
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
         includeRootFolder: false
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'

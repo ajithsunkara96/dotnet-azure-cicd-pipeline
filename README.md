@@ -68,3 +68,11 @@ Implement a CI/CD pipeline using **Azure DevOps** to build, test, package, and d
 │       └── GreetingServiceTests.cs
 ├── azure-pipelines.yml
 └── README.md
+```
+Credits:
+
+Original reference materials and code came from the following repositories:
+luckysuie/Pipelines – Pipeline-15
+luckysuie/dotnetwebapp
+
+I adapted and extended these resources to implement a full CI/CD pipeline with Azure DevOps for my own learning and practice.

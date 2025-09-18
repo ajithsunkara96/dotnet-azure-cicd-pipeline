@@ -56,7 +56,6 @@ Implement a CI/CD pipeline using **Azure DevOps** to build, test, package, and d
 
 ## 📂 Repository Structure
 ```text
-.
 ├── src/
 │   └── DotNetWebApp/
 │       ├── DotNetWebApp.csproj
@@ -66,6 +65,8 @@ Implement a CI/CD pipeline using **Azure DevOps** to build, test, package, and d
 ├── tests/
 │   └── DotNetWebApp.Tests/
 │       └── GreetingServiceTests.cs
+├── .gitignore
+├── DotNetWebApp.sln
 ├── azure-pipelines.yml
 └── README.md
 ```

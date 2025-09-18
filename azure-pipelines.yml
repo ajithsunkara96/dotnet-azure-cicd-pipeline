@@ -63,20 +63,29 @@ stages:
           --output $(Build.ArtifactStagingDirectory)/publish
         zipAfterPublish: false
 
-    # ===== Flatten publish output if a single nested folder exists (e.g., publish/DotNetWebApp/...) =====
+    # ===== Flatten publish output safely if a single nested folder exists (e.g., publish/DotNetWebApp/...) =====
     - bash: |
         set -eux
         PUB="$(Build.ArtifactStagingDirectory)/publish"
-        shopt -s nullglob dotglob
-        entries=("$PUB"/*)
-        if [ ${#entries[@]} -eq 1 ] && [ -d "${entries[0]}" ]; then
-          echo "Flattening ${entries[0]} into $PUB"
-          mv "${entries[0]}"/* "$PUB"/
-          rmdir "${entries[0]}"
+
+        # count top-level entries
+        COUNT="$(find "$PUB" -mindepth 1 -maxdepth 1 | wc -l)"
+        if [ "$COUNT" -eq 1 ]; then
+          # get the sole entry if it's a directory
+          SUB="$(find "$PUB" -mindepth 1 -maxdepth 1 -type d || true)"
+          if [ -n "$SUB" ]; then
+            echo "Flattening $SUB into $PUB"
+            shopt -s dotglob
+            # copy contents (including hidden files/dirs) up one level
+            cp -a "$SUB"/. "$PUB"/
+            # remove the now redundant subfolder
+            rm -rf "$SUB"
+          fi
         fi
+
         echo "Publish folder listing:"
         ls -la "$PUB"
-      displayName: 'Flatten publish output (if nested)'
+      displayName: 'Flatten publish output (safe)'
 
     # ===== ZIP exactly the flattened publish folder contents =====
     - task: ArchiveFiles@2

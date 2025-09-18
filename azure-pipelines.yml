@@ -8,7 +8,7 @@ pr:
 
 variables:
   buildConfiguration: 'Release'
-  azureServiceConnection: 'Project-1 Service Connection'   # keep quotes (spaces)
+  azureServiceConnection: 'Project-1 Service Connection'   # keep quotes (spaces in name)
   appNameDev: 'mywebapp-dev'
   appNameStg: 'mywebapp-stg'
   appNamePrd: 'mywebapp-prd'
@@ -52,14 +52,33 @@ stages:
         arguments: '--configuration $(buildConfiguration) --no-build --collect "XPlat Code Coverage"'
         publishTestResults: true
 
+    # ===== Publish the specific web project =====
     - task: DotNetCoreCLI@2
-      displayName: 'Publish web project(s)'
+      displayName: 'Publish web project'
       inputs:
         command: 'publish'
         projects: 'src/DotNetWebApp/DotNetWebApp.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+        arguments: >-
+          --configuration $(buildConfiguration)
+          --output $(Build.ArtifactStagingDirectory)/publish
         zipAfterPublish: false
 
+    # ===== Flatten publish output if a single nested folder exists (e.g., publish/DotNetWebApp/...) =====
+    - bash: |
+        set -eux
+        PUB="$(Build.ArtifactStagingDirectory)/publish"
+        shopt -s nullglob dotglob
+        entries=("$PUB"/*)
+        if [ ${#entries[@]} -eq 1 ] && [ -d "${entries[0]}" ]; then
+          echo "Flattening ${entries[0]} into $PUB"
+          mv "${entries[0]}"/* "$PUB"/
+          rmdir "${entries[0]}"
+        fi
+        echo "Publish folder listing:"
+        ls -la "$PUB"
+      displayName: 'Flatten publish output (if nested)'
+
+    # ===== ZIP exactly the flattened publish folder contents =====
     - task: ArchiveFiles@2
       displayName: 'Create deployment ZIP'
       inputs:
